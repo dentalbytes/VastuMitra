@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Plants &amp; Trees Vastu Guide | Vastu Guide</title>
+  <meta name="description" content="Which plants and trees are considered auspicious in Vastu Shastra, where to place them, and which are traditionally avoided near the home." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%95%89%EF%B8%8F</text></svg>" />
+</head>
+<body class="text-stone-800 antialiased">
+  <header id="site-header" class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-stone-100"></header>
+  <div id="disclaimer-banner"></div>
+
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 py-12">
+    <a href="index.html" class="text-sm text-amber-700 hover:text-amber-900 font-medium">← All rooms</a>
+
+    <div class="flex items-center gap-3 mt-4 mb-2">
+      <span class="text-4xl" aria-hidden="true">🌳</span>
+      <h1 class="font-serif text-3xl sm:text-4xl font-bold text-stone-900">Plants &amp; Trees</h1>
+    </div>
+    <p class="text-lg text-stone-600 leading-relaxed mb-6 max-w-2xl">
+      Plants are treated as living carriers of energy in Vastu — some are considered auspicious and welcomed close
+      to the home, while others are traditionally kept at a distance. Here's a reference guide to both.
+    </p>
+
+    <div class="region-note p-4 mb-8 text-sm text-amber-900 leading-relaxed">
+      As with room placement, most core plant guidance is shared across regional traditions, with a few
+      exceptions noted per plant below — particularly around coconut and banana, which carry extra ritual weight
+      in South Indian custom.
+    </div>
+
+    <!-- Controls -->
+    <div class="flex flex-col sm:flex-row gap-3 mb-8 sticky top-16 z-20 bg-[#fdf8f1]/95 backdrop-blur py-3">
+      <div class="relative flex-1">
+        <input id="plant-search" type="search" placeholder="Search plants (e.g. Tulsi, Cactus, Neem)…"
+          class="w-full pl-10 pr-4 py-2.5 rounded-full border border-stone-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" />
+        <svg class="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/></svg>
+      </div>
+      <div class="flex gap-2" role="group" aria-label="Filter by category">
+        <button data-filter="all" class="plant-filter-btn px-4 py-2 rounded-full text-sm font-medium border border-amber-800 bg-amber-800 text-white">All</button>
+        <button data-filter="auspicious" class="plant-filter-btn px-4 py-2 rounded-full text-sm font-medium border border-stone-200 bg-white text-stone-700 hover:border-green-400">Auspicious</button>
+        <button data-filter="avoid" class="plant-filter-btn px-4 py-2 rounded-full text-sm font-medium border border-stone-200 bg-white text-stone-700 hover:border-red-400">Avoid</button>
+      </div>
+    </div>
+
+    <div id="plant-grid" class="grid sm:grid-cols-2 gap-4 mb-6"></div>
+    <p id="plant-empty" class="hidden text-center text-stone-400 py-12">No plants match your search.</p>
+
+    <div class="flex justify-between text-sm pt-6 border-t border-stone-100">
+      <a href="balcony-garden.html" class="text-amber-700 hover:text-amber-900 font-medium">← Balcony &amp; Garden</a>
+      <a href="disclaimer.html" class="text-amber-700 hover:text-amber-900 font-medium">About &amp; Disclaimer →</a>
+    </div>
+  </main>
+
+  <footer id="site-footer" class="bg-stone-50 border-t border-stone-100 mt-8"></footer>
+
+  <script src="js/plants-data.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    let activeFilter = "all";
+
+    function plantCard(p) {
+      const isGood = p.category === "auspicious";
+      return `
+        <div class="bg-white rounded-2xl border border-stone-100 p-5 plant-card" data-name="${p.name.toLowerCase()}" data-category="${p.category}">
+          <div class="flex items-start justify-between gap-2">
+            <h3 class="font-serif text-lg font-bold text-stone-900">${p.name}</h3>
+            <span class="shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full ${isGood ? "bg-green-100 text-green-800" : "bg-red-100 text-red-700"}">
+              ${isGood ? "Auspicious" : "Avoid"}
+            </span>
+          </div>
+          <p class="text-xs font-medium text-amber-700 mt-2 uppercase tracking-wide">${p.placement}</p>
+          <p class="text-sm text-stone-600 mt-2 leading-relaxed">${p.note}</p>
+        </div>`;
+    }
+
+    function renderPlants() {
+      const query = document.getElementById("plant-search").value.trim().toLowerCase();
+      const grid = document.getElementById("plant-grid");
+      const empty = document.getElementById("plant-empty");
+
+      const filtered = PLANTS.filter((p) => {
+        const matchesFilter = activeFilter === "all" || p.category === activeFilter;
+        const matchesQuery = !query || p.name.toLowerCase().includes(query) || p.note.toLowerCase().includes(query);
+        return matchesFilter && matchesQuery;
+      });
+
+      grid.innerHTML = filtered.map(plantCard).join("");
+      empty.classList.toggle("hidden", filtered.length > 0);
+    }
+
+    document.getElementById("plant-search").addEventListener("input", renderPlants);
+
+    document.querySelectorAll(".plant-filter-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        activeFilter = btn.dataset.filter;
+        document.querySelectorAll(".plant-filter-btn").forEach((b) => {
+          b.classList.remove("bg-amber-800", "text-white", "border-amber-800");
+          b.classList.add("bg-white", "text-stone-700", "border-stone-200");
+        });
+        btn.classList.remove("bg-white", "text-stone-700", "border-stone-200");
+        btn.classList.add("bg-amber-800", "text-white", "border-amber-800");
+        renderPlants();
+      });
+    });
+
+    renderPlants();
+  </script>
+</body>
+</html>
