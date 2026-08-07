@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Personalized Daily Vastu Tips | Vastu Guide</title>
+  <meta name="description" content="A traditional Vastu tip for today, plus one tailored to your home's facing direction." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%95%89%EF%B8%8F</text></svg>" />
+</head>
+<body class="text-stone-800 antialiased">
+  <header id="site-header" class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-stone-100"></header>
+  <div id="disclaimer-banner"></div>
+
+  <main class="max-w-2xl mx-auto px-4 sm:px-6 py-12">
+    <a href="dashboard.html" class="text-sm text-amber-700 hover:text-amber-900 font-medium">← Health Dashboard</a>
+
+    <div class="flex items-center gap-3 mt-4 mb-2">
+      <span class="text-4xl" aria-hidden="true">🗓️</span>
+      <h1 class="font-serif text-3xl sm:text-4xl font-bold text-stone-900">Daily Vastu Tips</h1>
+    </div>
+    <p class="text-lg text-stone-600 leading-relaxed mb-6 max-w-2xl">
+      A traditional tip for today, based on the weekday, plus one for your home's facing direction if you add it below.
+    </p>
+
+    <div id="today-card" class="bg-white rounded-2xl border border-stone-100 p-6 mb-6"></div>
+
+    <div class="bg-white rounded-2xl border border-stone-100 p-6 mb-6">
+      <label class="block text-sm font-medium text-stone-700 mb-1.5">Add your home's facing direction for one more tip (optional)</label>
+      <select id="direction-select" class="w-full rounded-lg border border-stone-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300">
+        <option value="">— Select a direction —</option>
+      </select>
+    </div>
+
+    <div id="direction-card"></div>
+
+    <div class="region-note p-4 mt-6 text-sm text-amber-900 leading-relaxed">
+      A fully personalized version of this would also factor in your zodiac sign and Nakshatra (birth star), which
+      needs accurate birth date, time, and place data plus a real astronomical calendar (Panchang) — that's a
+      planned enhancement, not something we've approximated here.
+    </div>
+
+    <div class="flex justify-between text-sm pt-8">
+      <a href="advisor.html" class="text-amber-700 hover:text-amber-900 font-medium ml-auto">Vastu Advisor →</a>
+    </div>
+  </main>
+
+  <footer id="site-footer" class="bg-stone-50 border-t border-stone-100 mt-8"></footer>
+
+  <script src="js/daily-tips-data.js"></script>
+  <script src="js/compass-data.js"></script>
+  <script src="js/badges.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    const today = new Date();
+    const todayTips = DAILY_TIPS[today.getDay()];
+
+    document.getElementById("today-card").innerHTML = `
+      <p class="text-xs font-semibold uppercase tracking-wide text-amber-700 mb-1">${todayTips.day} · Ruled by ${todayTips.ruler}</p>
+      <h2 class="font-serif text-xl font-bold text-stone-900 mb-4">Today's Tips</h2>
+      <ul class="space-y-2 text-sm text-stone-700">
+        ${todayTips.tips.map((t) => `<li class="do-item">${t}</li>`).join("")}
+      </ul>
+    `;
+
+    const select = document.getElementById("direction-select");
+    DIRECTIONS.forEach((d) => {
+      const opt = document.createElement("option");
+      opt.value = d.key;
+      opt.textContent = `${d.name} (${d.sanskrit})`;
+      select.appendChild(opt);
+    });
+
+    select.addEventListener("change", () => {
+      const card = document.getElementById("direction-card");
+      if (!select.value) {
+        card.innerHTML = "";
+        return;
+      }
+      const d = DIRECTIONS.find((x) => x.key === select.value);
+      card.innerHTML = `
+        <div class="bg-white rounded-2xl border border-stone-100 p-6">
+          <p class="text-xs font-semibold uppercase tracking-wide text-amber-700 mb-1">For your ${d.name}-facing home</p>
+          <p class="text-sm text-stone-700 leading-relaxed">
+            Keep the ${d.name} side of your home aligned with its traditional strengths — best suited for
+            ${d.bestFor.join(", ").toLowerCase()}. Try to keep ${d.avoid.join(" and ").toLowerCase()} away from this zone.
+          </p>
+        </div>
+      `;
+      maybeUnlockAndNotify("beginner");
+    });
+  </script>
+</body>
+</html>

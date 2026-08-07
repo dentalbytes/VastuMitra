@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vastu Health Dashboard | Vastu Guide</title>
+  <meta name="description" content="See which life aspects each direction is traditionally associated with — spirituality, relationships, health, wealth, and more." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%95%89%EF%B8%8F</text></svg>" />
+</head>
+<body class="text-stone-800 antialiased">
+  <header id="site-header" class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-stone-100"></header>
+  <div id="disclaimer-banner"></div>
+
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 py-12">
+    <a href="compass.html" class="text-sm text-amber-700 hover:text-amber-900 font-medium">← Interactive Compass</a>
+
+    <div class="flex items-center gap-3 mt-4 mb-2">
+      <span class="text-4xl" aria-hidden="true">💠</span>
+      <h1 class="font-serif text-3xl sm:text-4xl font-bold text-stone-900">Vastu Health Dashboard</h1>
+    </div>
+    <p class="text-lg text-stone-600 leading-relaxed mb-4 max-w-2xl">
+      Each direction is traditionally linked to particular areas of life. Click a card to see the full picture for
+      that direction.
+    </p>
+    <div class="region-note p-4 mb-8 text-sm text-amber-900 leading-relaxed">
+      These life-aspect associations are commonly used in popular Vastu practice, though they're less uniformly
+      standardized across classical texts than core room-placement rules. Treat this as a helpful lens, not a fixed formula.
+    </div>
+
+    <div id="dashboard-grid" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+
+    <div class="flex justify-between text-sm pt-8">
+      <a href="dashboard.html" class="invisible">.</a>
+      <a href="advisor.html" class="text-amber-700 hover:text-amber-900 font-medium ml-auto">Vastu Advisor →</a>
+    </div>
+  </main>
+
+  <footer id="site-footer" class="bg-stone-50 border-t border-stone-100 mt-8"></footer>
+
+  <script src="js/compass-data.js"></script>
+  <script src="js/badges.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    let expanded = null;
+
+    function render() {
+      const grid = document.getElementById("dashboard-grid");
+      grid.innerHTML = DIRECTIONS.map((d) => {
+        const isOpen = expanded === d.key;
+        return `
+          <button data-key="${d.key}" class="dash-card text-left bg-white rounded-2xl border p-5 transition-all ${
+            isOpen ? "border-amber-400 shadow-md sm:col-span-2 lg:col-span-2" : "border-stone-100 hover:border-amber-200 hover:shadow-sm"
+          }">
+            <p class="text-xs font-semibold uppercase tracking-wide text-stone-400">${d.name}</p>
+            <div class="flex flex-wrap gap-1.5 mt-2 mb-1">
+              ${d.aspects.map((a) => `<span class="text-xs font-medium px-2 py-1 rounded-full bg-amber-50 text-amber-800">✔ ${a}</span>`).join("")}
+            </div>
+            ${
+              isOpen
+                ? `
+              <div class="mt-4 pt-4 border-t border-stone-100 space-y-2 text-sm">
+                <p class="text-stone-500">Element: <strong class="text-stone-700">${d.element}</strong></p>
+                <p class="text-green-700 font-medium">Best for: <span class="text-stone-700 font-normal">${d.bestFor.join(", ")}</span></p>
+                <p class="text-red-700 font-medium">Avoid: <span class="text-stone-700 font-normal">${d.avoid.join(", ")}</span></p>
+              </div>`
+                : `<p class="text-xs text-stone-400 mt-2">Tap to expand</p>`
+            }
+          </button>`;
+      }).join("");
+
+      grid.querySelectorAll(".dash-card").forEach((card) => {
+        card.addEventListener("click", () => {
+          expanded = expanded === card.dataset.key ? null : card.dataset.key;
+          maybeUnlockAndNotify("beginner");
+          render();
+        });
+      });
+    }
+
+    render();
+  </script>
+</body>
+</html>

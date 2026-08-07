@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Plot Selection Tool | Vastu Guide</title>
+  <meta name="description" content="A rule-of-thumb Vastu rating for a plot before you buy — based on shape, road direction, and corner placement." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%95%89%EF%B8%8F</text></svg>" />
+</head>
+<body class="text-stone-800 antialiased">
+  <header id="site-header" class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-stone-100"></header>
+  <div id="disclaimer-banner"></div>
+
+  <main class="max-w-2xl mx-auto px-4 sm:px-6 py-12">
+    <a href="remedies.html" class="text-sm text-amber-700 hover:text-amber-900 font-medium">← Remedies Library</a>
+
+    <div class="flex items-center gap-3 mt-4 mb-2">
+      <span class="text-4xl" aria-hidden="true">📐</span>
+      <h1 class="font-serif text-3xl sm:text-4xl font-bold text-stone-900">Plot Selection Tool</h1>
+    </div>
+    <p class="text-lg text-stone-600 leading-relaxed mb-8 max-w-2xl">
+      Before you buy land, get a rough, rule-of-thumb Vastu rating based on shape, road direction, and corner
+      placement. This is a simplified heuristic, not a substitute for an in-person site visit or a professional
+      consultation.
+    </p>
+
+    <form id="plot-form" class="bg-white rounded-2xl border border-stone-100 p-6 space-y-5 mb-8">
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-stone-700 mb-1.5">Length (ft)</label>
+          <input type="number" name="length" min="1" value="40" required class="w-full rounded-lg border border-stone-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-stone-700 mb-1.5">Width (ft)</label>
+          <input type="number" name="width" min="1" value="30" required class="w-full rounded-lg border border-stone-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" />
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-stone-700 mb-1.5">Plot shape</label>
+        <select name="shape" class="w-full rounded-lg border border-stone-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300">
+          <option value="square">Square</option>
+          <option value="rectangle" selected>Rectangle</option>
+          <option value="irregular">Irregular / L-shaped / triangular</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-stone-700 mb-1.5">Main road direction (which side the road faces)</label>
+        <select name="road" class="w-full rounded-lg border border-stone-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300">
+          <option value="N">North</option>
+          <option value="NE" selected>North-East</option>
+          <option value="E">East</option>
+          <option value="SE">South-East</option>
+          <option value="S">South</option>
+          <option value="SW">South-West</option>
+          <option value="W">West</option>
+          <option value="NW">North-West</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-stone-700 mb-1.5">Is it a corner plot (roads on two sides)?</label>
+        <div class="flex gap-3">
+          <label class="flex-1 flex items-center gap-2 border border-stone-200 rounded-lg px-3 py-2.5 text-sm cursor-pointer has-[:checked]:border-amber-400 has-[:checked]:bg-amber-50">
+            <input type="radio" name="corner" value="no" checked /> No
+          </label>
+          <label class="flex-1 flex items-center gap-2 border border-stone-200 rounded-lg px-3 py-2.5 text-sm cursor-pointer has-[:checked]:border-amber-400 has-[:checked]:bg-amber-50">
+            <input type="radio" name="corner" value="yes" /> Yes
+          </label>
+        </div>
+      </div>
+
+      <button type="submit" class="w-full py-3 rounded-full bg-amber-800 text-white font-medium hover:bg-amber-900 transition-colors">Rate This Plot</button>
+    </form>
+
+    <div id="plot-result"></div>
+
+    <div class="flex justify-between text-sm pt-8">
+      <a href="rent-checker.html" class="text-amber-700 hover:text-amber-900 font-medium ml-auto">Rent House Checker →</a>
+    </div>
+  </main>
+
+  <footer id="site-footer" class="bg-stone-50 border-t border-stone-100 mt-8"></footer>
+
+  <script src="js/badges.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    const RATINGS = {
+      excellent: { label: "Excellent", color: "text-green-700 bg-green-100", note: "Strong alignment with traditional plot-selection principles." },
+      good: { label: "Good", color: "text-lime-700 bg-lime-100", note: "Solid overall, with one or two minor points worth keeping in mind." },
+      average: { label: "Average", color: "text-amber-700 bg-amber-100", note: "Workable, but expect to lean on remedies for a few aspects." },
+      avoid: { label: "Avoid (or plan carefully)", color: "text-red-700 bg-red-100", note: "Traditionally considered a more difficult plot — proceed only with expert input." },
+    };
+
+    function ratePlot({ length, width, shape, road, corner }) {
+      let score = 0;
+      const notes = [];
+
+      // Shape & proportions
+      const ratio = Math.max(length, width) / Math.min(length, width);
+      if (shape === "irregular") {
+        score -= 20;
+        notes.push("Irregular shapes are traditionally considered less favorable — the Remedies Library has suggestions for softening an irregular corner.");
+      } else if (shape === "square" || ratio <= 1.5) {
+        score += 30;
+        notes.push("A square or near-square plot is traditionally considered the most favorable shape.");
+      } else if (ratio <= 2.5) {
+        score += 15;
+        notes.push("A moderately elongated rectangle is generally acceptable.");
+      } else {
+        score += 0;
+        notes.push("A very elongated plot is workable but less ideal — thoughtful room placement matters more here.");
+      }
+
+      // Road / facing direction
+      const goodRoads = ["N", "E", "NE"];
+      const okRoads = ["W", "NW"];
+      if (goodRoads.includes(road)) {
+        score += 25;
+        notes.push("North, East, and North-East facing roads are traditionally the most favorable.");
+      } else if (okRoads.includes(road)) {
+        score += 10;
+        notes.push("West and North-West facing plots are considered workable with sensible entrance placement.");
+      } else if (road === "S") {
+        score += 5;
+        notes.push("South-facing plots are common and workable, though the entrance itself needs particular care — see the Main Entrance guide.");
+      } else {
+        score -= 10;
+        notes.push("South-West facing roads are traditionally considered more challenging.");
+      }
+
+      // Corner plot
+      if (corner === "yes") {
+        if (["N", "E", "NE"].includes(road)) {
+          score += 15;
+          notes.push("A corner plot with roads toward the North/East side is traditionally seen as a bonus.");
+        } else {
+          score -= 10;
+          notes.push("A corner plot with roads toward the South/West side is traditionally considered less favorable.");
+        }
+      }
+
+      let bucket = "average";
+      if (score >= 55) bucket = "excellent";
+      else if (score >= 35) bucket = "good";
+      else if (score >= 15) bucket = "average";
+      else bucket = "avoid";
+
+      return { bucket, notes };
+    }
+
+    document.getElementById("plot-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const input = Object.fromEntries(formData.entries());
+      input.length = Number(input.length);
+      input.width = Number(input.width);
+
+      const { bucket, notes } = ratePlot(input);
+      const rating = RATINGS[bucket];
+
+      document.getElementById("plot-result").innerHTML = `
+        <div class="region-note p-6">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="text-sm font-semibold px-3 py-1 rounded-full ${rating.color}">${rating.label}</span>
+          </div>
+          <p class="text-sm text-amber-900/90 mb-3">${rating.note}</p>
+          <ul class="space-y-1.5 text-sm text-amber-900/90">
+            ${notes.map((n) => `<li class="flex gap-2"><span aria-hidden="true">•</span>${n}</li>`).join("")}
+          </ul>
+          <p class="text-xs text-amber-800/70 mt-4 pt-4 border-t border-amber-200">
+            This is a simplified scoring heuristic for general orientation only — a real plot evaluation should
+            include a site visit, a check of legal/zoning status, soil quality, and ideally an in-person Vastu and
+            structural assessment.
+          </p>
+        </div>
+      `;
+      maybeUnlockAndNotify("plot-scholar");
+    });
+  </script>
+</body>
+</html>

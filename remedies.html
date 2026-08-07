@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vastu Remedies Without Demolition | Vastu Guide</title>
+  <meta name="description" content="Practical, non-structural Vastu remedies for common problems — no walls moved, no doors relocated." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%95%89%EF%B8%8F</text></svg>" />
+</head>
+<body class="text-stone-800 antialiased">
+  <header id="site-header" class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-stone-100"></header>
+  <div id="disclaimer-banner"></div>
+
+  <main class="max-w-4xl mx-auto px-4 sm:px-6 py-12">
+    <a href="advisor.html" class="text-sm text-amber-700 hover:text-amber-900 font-medium">← Vastu Advisor</a>
+
+    <div class="flex items-center gap-3 mt-4 mb-2">
+      <span class="text-4xl" aria-hidden="true">🛠️</span>
+      <h1 class="font-serif text-3xl sm:text-4xl font-bold text-stone-900">Remedies Without Demolition</h1>
+    </div>
+    <p class="text-lg text-stone-600 leading-relaxed mb-8 max-w-2xl">
+      Most Vastu "problems" don't require moving a wall. Here are practical, non-structural corrections traditionally
+      suggested instead, tagged by how easy they are to do.
+    </p>
+
+    <div class="relative mb-8">
+      <input id="remedy-search" type="search" placeholder="Search a problem (e.g. kitchen, mirror, staircase)…"
+        class="w-full pl-10 pr-4 py-2.5 rounded-full border border-stone-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" />
+      <svg class="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/></svg>
+    </div>
+
+    <div id="remedy-list" class="space-y-4"></div>
+    <p id="remedy-empty" class="hidden text-center text-stone-400 py-12">No matching problems found.</p>
+
+    <div class="flex justify-between text-sm pt-8 border-t border-stone-100 mt-4">
+      <a href="plot-selection.html" class="text-amber-700 hover:text-amber-900 font-medium">← Plot Selection Tool</a>
+      <a href="products.html" class="text-amber-700 hover:text-amber-900 font-medium">Product Guide →</a>
+    </div>
+  </main>
+
+  <footer id="site-footer" class="bg-stone-50 border-t border-stone-100 mt-8"></footer>
+
+  <script src="js/remedies-data.js"></script>
+  <script src="js/badges.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    const difficultyColor = { Easy: "bg-green-100 text-green-800", Medium: "bg-amber-100 text-amber-800", Expert: "bg-red-100 text-red-700" };
+
+    function card(r) {
+      return `
+        <div class="bg-white rounded-2xl border border-stone-100 p-5">
+          <div class="flex items-start justify-between gap-3 mb-3">
+            <h3 class="font-serif text-lg font-bold text-stone-900">${r.problem}</h3>
+            <span class="shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full ${difficultyColor[r.difficulty]}">${r.difficulty}</span>
+          </div>
+          <ul class="space-y-1.5 text-sm text-stone-700">
+            ${r.solutions.map((s) => `<li class="flex gap-2"><span class="text-green-600" aria-hidden="true">✓</span>${s}</li>`).join("")}
+          </ul>
+        </div>`;
+    }
+
+    function render() {
+      const q = document.getElementById("remedy-search").value.trim().toLowerCase();
+      const filtered = REMEDIES.filter(
+        (r) => !q || r.problem.toLowerCase().includes(q) || r.solutions.some((s) => s.toLowerCase().includes(q))
+      );
+      document.getElementById("remedy-list").innerHTML = filtered.map(card).join("");
+      document.getElementById("remedy-empty").classList.toggle("hidden", filtered.length > 0);
+      if (q) maybeUnlockAndNotify("remedy-ready");
+    }
+
+    document.getElementById("remedy-search").addEventListener("input", render);
+    render();
+    maybeUnlockAndNotify("remedy-ready");
+  </script>
+</body>
+</html>

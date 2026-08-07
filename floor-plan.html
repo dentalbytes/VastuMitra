@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Floor Plan Analysis (Beta) | Vastu Guide</title>
+  <meta name="description" content="Upload a floor plan, blueprint, or hand-drawn sketch for an AI-assisted Vastu score and recommendations. Requires a one-time setup step." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%95%89%EF%B8%8F</text></svg>" />
+</head>
+<body class="text-stone-800 antialiased">
+  <header id="site-header" class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-stone-100"></header>
+  <div id="disclaimer-banner"></div>
+
+  <main class="max-w-2xl mx-auto px-4 sm:px-6 py-12">
+    <a href="consultant.html" class="text-sm text-amber-700 hover:text-amber-900 font-medium">← AI Consultant</a>
+
+    <div class="flex items-center gap-3 mt-4 mb-2">
+      <span class="text-4xl" aria-hidden="true">📄</span>
+      <h1 class="font-serif text-3xl sm:text-4xl font-bold text-stone-900">Floor Plan Analysis</h1>
+      <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-stone-100 text-stone-500">BETA</span>
+    </div>
+    <p class="text-lg text-stone-600 leading-relaxed mb-6 max-w-2xl">
+      Upload a blueprint, hand-drawn sketch, or apartment layout. We'll try to identify the entrance, kitchen,
+      bedrooms, toilets, and pooja room, then generate a Vastu score with problems and remedies.
+    </p>
+
+    <div class="region-note p-4 mb-6 text-sm text-amber-900 leading-relaxed">
+      <strong>Setup required:</strong> like the AI Consultant, this needs an AI API key configured by the site
+      owner (see <code class="bg-white/60 px-1 rounded">api/analyze-floorplan.js</code> and the README). Floor
+      plans are often ambiguous even for a human reader — treat any result here as a starting point, not a final verdict.
+    </div>
+
+    <div class="bg-white rounded-2xl border border-stone-100 p-6 mb-6">
+      <label for="file-input" class="block border-2 border-dashed border-stone-200 rounded-xl p-8 text-center cursor-pointer hover:border-amber-300 transition-colors">
+        <span class="text-3xl block mb-2" aria-hidden="true">📤</span>
+        <span class="text-sm text-stone-600">Click to choose an image, or drag one here</span>
+        <input id="file-input" type="file" accept="image/*" class="hidden" />
+      </label>
+      <img id="preview" class="hidden mt-4 rounded-lg max-h-64 mx-auto" alt="Floor plan preview" />
+      <button id="analyze-btn" disabled class="mt-4 w-full py-3 rounded-full bg-amber-800 text-white font-medium hover:bg-amber-900 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+        Analyze Floor Plan
+      </button>
+    </div>
+
+    <div id="analysis-result"></div>
+  </main>
+
+  <footer id="site-footer" class="bg-stone-50 border-t border-stone-100 mt-8"></footer>
+
+  <script src="js/main.js"></script>
+  <script>
+    let imageBase64 = null;
+    let mimeType = null;
+
+    const fileInput = document.getElementById("file-input");
+    const preview = document.getElementById("preview");
+    const analyzeBtn = document.getElementById("analyze-btn");
+
+    fileInput.addEventListener("change", () => {
+      const file = fileInput.files[0];
+      if (!file) return;
+      mimeType = file.type || "image/png";
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result; // data:<mime>;base64,<data>
+        imageBase64 = result.split(",")[1];
+        preview.src = result;
+        preview.classList.remove("hidden");
+        analyzeBtn.disabled = false;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function scoreColor(score) {
+      if (score === null || score === undefined) return "text-stone-500";
+      if (score >= 70) return "text-green-700";
+      if (score >= 45) return "text-amber-700";
+      return "text-red-700";
+    }
+
+    analyzeBtn.addEventListener("click", async () => {
+      const result = document.getElementById("analysis-result");
+      analyzeBtn.disabled = true;
+      analyzeBtn.textContent = "Analyzing…";
+      result.innerHTML = "";
+
+      try {
+        const res = await fetch("/api/analyze-floorplan", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ imageBase64, mimeType }),
+        });
+
+        if (res.status === 501) {
+          result.innerHTML = `<div class="region-note p-5 text-sm text-amber-900">This feature isn't set up yet — the site owner needs to add an AI API key in Vercel (see api/analyze-floorplan.js).</div>`;
+          return;
+        }
+        if (!res.ok) {
+          result.innerHTML = `<div class="region-note p-5 text-sm text-amber-900">Something went wrong analyzing this image. Please try again.</div>`;
+          return;
+        }
+
+        const data = await res.json();
+        result.innerHTML = `
+          <div class="bg-white rounded-2xl border border-stone-100 p-6 mb-4 text-center">
+            <p class="text-xs font-semibold uppercase tracking-wide text-stone-400 mb-1">Vastu Score</p>
+            <p class="text-5xl font-serif font-bold ${scoreColor(data.vastuScore)}">${data.vastuScore ?? "—"}${data.vastuScore !== null ? "/100" : ""}</p>
+          </div>
+          ${
+            data.detectedRooms && data.detectedRooms.length
+              ? `<div class="bg-white rounded-2xl border border-stone-100 p-5 mb-4">
+                   <h2 class="font-semibold text-stone-900 mb-2 text-sm">Detected Elements</h2>
+                   <ul class="text-sm text-stone-700 space-y-1">
+                     ${data.detectedRooms.map((r) => `<li>• <strong>${r.room}</strong> — ${r.location} <span class="text-xs text-stone-400">(${r.confidence} confidence)</span></li>`).join("")}
+                   </ul>
+                 </div>`
+              : ""
+          }
+          ${
+            data.problems && data.problems.length
+              ? `<div class="bg-white rounded-2xl border border-stone-100 p-5 mb-4">
+                   <h2 class="font-semibold text-red-700 mb-2 text-sm">Problems</h2>
+                   <ul class="text-sm text-stone-700 space-y-1">${data.problems.map((p) => `<li class="avoid-item">${p}</li>`).join("")}</ul>
+                 </div>`
+              : ""
+          }
+          ${
+            data.remedies && data.remedies.length
+              ? `<div class="bg-white rounded-2xl border border-stone-100 p-5 mb-4">
+                   <h2 class="font-semibold text-green-700 mb-2 text-sm">Suggested Remedies</h2>
+                   <ul class="text-sm text-stone-700 space-y-1">${data.remedies.map((r) => `<li class="do-item">${r}</li>`).join("")}</ul>
+                 </div>`
+              : ""
+          }
+          ${data.notes ? `<p class="text-xs text-stone-400">${data.notes}</p>` : ""}
+        `;
+      } catch (err) {
+        result.innerHTML = `<div class="region-note p-5 text-sm text-amber-900">Couldn't reach the analysis backend — this page is likely running without the api/ functions deployed yet.</div>`;
+      } finally {
+        analyzeBtn.disabled = false;
+        analyzeBtn.textContent = "Analyze Floor Plan";
+      }
+    });
+  </script>
+</body>
+</html>

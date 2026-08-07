@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Progress | Vastu Guide</title>
+  <meta name="description" content="Track your badges and progress across the Vastu Guide tools. Stored locally in your browser." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%95%89%EF%B8%8F</text></svg>" />
+</head>
+<body class="text-stone-800 antialiased">
+  <header id="site-header" class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-stone-100"></header>
+  <div id="disclaimer-banner"></div>
+
+  <main class="max-w-3xl mx-auto px-4 sm:px-6 py-12">
+    <a href="products.html" class="text-sm text-amber-700 hover:text-amber-900 font-medium">← Product Guide</a>
+
+    <div class="flex items-center gap-3 mt-4 mb-2">
+      <span class="text-4xl" aria-hidden="true">🏆</span>
+      <h1 class="font-serif text-3xl sm:text-4xl font-bold text-stone-900">My Progress</h1>
+    </div>
+    <p class="text-lg text-stone-600 leading-relaxed mb-8 max-w-2xl">
+      Badges earned by exploring the tools on this site. Everything here is stored locally in your browser — there's
+      no account system, so progress won't follow you to another device.
+    </p>
+
+    <div id="badge-grid" class="grid sm:grid-cols-2 gap-4 mb-8"></div>
+
+    <div class="flex flex-wrap gap-3">
+      <a href="room-checker.html" class="px-5 py-2.5 rounded-full bg-amber-800 text-white text-sm font-medium hover:bg-amber-900 transition-colors">Continue the Room Checker</a>
+      <a href="compass.html" class="px-5 py-2.5 rounded-full bg-white border border-stone-200 text-stone-700 text-sm font-medium hover:border-amber-300 transition-colors">Explore the Compass</a>
+    </div>
+  </main>
+
+  <footer id="site-footer" class="bg-stone-50 border-t border-stone-100 mt-8"></footer>
+
+  <script src="js/badges.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    const grid = document.getElementById("badge-grid");
+    grid.innerHTML = BADGE_DEFS.map((b) => {
+      const unlocked = isBadgeUnlocked(b.id);
+      return `
+        <div class="bg-white rounded-2xl border p-5 flex items-start gap-4 ${unlocked ? "border-amber-200" : "border-stone-100 opacity-60"}">
+          <span class="text-3xl" aria-hidden="true">${unlocked ? b.icon : "🔒"}</span>
+          <div>
+            <p class="font-semibold text-stone-900">${b.name}</p>
+            <p class="text-sm text-stone-500 mt-0.5">${b.description}</p>
+            <p class="text-xs mt-2 font-medium ${unlocked ? "text-green-700" : "text-stone-400"}">${unlocked ? "Unlocked" : "Not yet unlocked"}</p>
+          </div>
+        </div>`;
+    }).join("");
+  </script>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vastu Advisor | Vastu Guide</title>
+  <meta name="description" content="Get personalized, rule-based Vastu suggestions based on your home's facing direction, type, size, and budget." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%95%89%EF%B8%8F</text></svg>" />
+</head>
+<body class="text-stone-800 antialiased">
+  <header id="site-header" class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-stone-100"></header>
+  <div id="disclaimer-banner"></div>
+
+  <main class="max-w-3xl mx-auto px-4 sm:px-6 py-12">
+    <a href="dashboard.html" class="text-sm text-amber-700 hover:text-amber-900 font-medium">← Health Dashboard</a>
+
+    <div class="flex items-center gap-3 mt-4 mb-2">
+      <span class="text-4xl" aria-hidden="true">💬</span>
+      <h1 class="font-serif text-3xl sm:text-4xl font-bold text-stone-900">Vastu Advisor</h1>
+    </div>
+    <p class="text-lg text-stone-600 leading-relaxed mb-2 max-w-2xl">
+      Answer a few questions about your home and get a set of tailored, traditional Vastu suggestions.
+    </p>
+    <p class="text-sm text-stone-500 mb-8">
+      This is a rule-based recommendation engine, not an open-ended AI chat — for free-form questions in your own
+      words, try the <a href="consultant.html" class="text-amber-700 hover:text-amber-900 underline font-medium">AI Consultant (beta)</a>.
+    </p>
+
+    <form id="advisor-form" class="bg-white rounded-2xl border border-stone-100 p-6 space-y-5 mb-8">
+      <div>
+        <label class="block text-sm font-medium text-stone-700 mb-1.5">Which direction does your main entrance face?</label>
+        <select name="direction" class="w-full rounded-lg border border-stone-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300">
+          <option value="N">North</option>
+          <option value="NE">North-East</option>
+          <option value="E" selected>East</option>
+          <option value="SE">South-East</option>
+          <option value="S">South</option>
+          <option value="SW">South-West</option>
+          <option value="W">West</option>
+          <option value="NW">North-West</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-stone-700 mb-1.5">City (optional — for your reference only; we don't perform location-based magnetic adjustments)</label>
+        <input type="text" name="city" placeholder="e.g. Pune" class="w-full rounded-lg border border-stone-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-stone-700 mb-1.5">Home type</label>
+        <div class="flex gap-3">
+          <label class="flex-1 flex items-center gap-2 border border-stone-200 rounded-lg px-3 py-2.5 text-sm cursor-pointer has-[:checked]:border-amber-400 has-[:checked]:bg-amber-50">
+            <input type="radio" name="homeType" value="apartment" checked /> Apartment / Flat
+          </label>
+          <label class="flex-1 flex items-center gap-2 border border-stone-200 rounded-lg px-3 py-2.5 text-sm cursor-pointer has-[:checked]:border-amber-400 has-[:checked]:bg-amber-50">
+            <input type="radio" name="homeType" value="independent" /> Independent House
+          </label>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-stone-700 mb-1.5">Number of rooms (bedrooms, roughly)</label>
+        <select name="rooms" class="w-full rounded-lg border border-stone-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300">
+          <option value="1">1 (studio/1RK)</option>
+          <option value="2" selected>2 (1–2 BHK)</option>
+          <option value="3">3 (3 BHK)</option>
+          <option value="4">4+ (villa/large home)</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-stone-700 mb-1.5">Budget for improvements</label>
+        <select name="budget" class="w-full rounded-lg border border-stone-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300">
+          <option value="free">No budget — rearranging only</option>
+          <option value="low" selected>Low — small items (₹500–1,500)</option>
+          <option value="medium">Medium — décor & fixtures (₹1,500–10,000)</option>
+          <option value="high">High — open to structural changes</option>
+        </select>
+      </div>
+
+      <button type="submit" class="w-full py-3 rounded-full bg-amber-800 text-white font-medium hover:bg-amber-900 transition-colors">Get My Recommendations</button>
+    </form>
+
+    <div id="advisor-result"></div>
+
+    <div class="flex justify-between text-sm pt-8">
+      <a href="daily-tips.html" class="text-amber-700 hover:text-amber-900 font-medium">← Daily Tips</a>
+      <a href="remedies.html" class="text-amber-700 hover:text-amber-900 font-medium">Remedies Library →</a>
+    </div>
+  </main>
+
+  <footer id="site-footer" class="bg-stone-50 border-t border-stone-100 mt-8"></footer>
+
+  <script src="js/compass-data.js"></script>
+  <script src="js/badges.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    const BUDGET_REMEDIES = {
+      free: ["Rearrange existing furniture to match the ideal placements below", "Simply reorient your desk, bed, or cooking direction where the layout allows"],
+      low: ["A small sea-salt bowl in a problem corner", "Repositioning a mirror", "A potted money plant or areca palm"],
+      medium: ["A copper strip or copper pyramid", "Better task lighting for dark corners", "A Himalayan salt lamp"],
+      high: ["Adding or enlarging a window on the East wall", "Relocating a wall or door (with a structural engineer's sign-off)", "A minor layout renovation guided by a Vastu consultant and architect together"],
+    };
+
+    function generateAdvice({ direction, city, homeType, rooms, budget }) {
+      const dir = DIRECTIONS.find((d) => d.key === direction);
+      const cityBit = city ? ` in ${city}` : "";
+      const homeLabel = homeType === "apartment" ? "apartment" : "independent house";
+
+      const points = [];
+
+      points.push(
+        `Your home${cityBit} has a ${dir.name} (${dir.sanskrit})-facing entrance. Traditionally this direction favors ${dir.bestFor
+          .join(", ")
+          .toLowerCase()}, and is best kept away from ${dir.avoid.join(" or ").toLowerCase()}.`
+      );
+
+      if (homeType === "apartment") {
+        points.push(
+          "Since you're in an apartment, structural changes (moving walls, doors) usually aren't possible — focus on furniture placement, colors, and small remedies rather than renovation."
+        );
+      } else {
+        points.push(
+          "As an independent house, you have more flexibility — if your budget allows, some structural corrections (like relocating a door or adding a window) become realistic options over time."
+        );
+      }
+
+      if (Number(rooms) <= 2) {
+        points.push(
+          "With a smaller home, the North-East corner and your bed's direction will have an outsized effect — prioritize getting those two right before anything else."
+        );
+      } else {
+        points.push(
+          "With a larger home, go room by room rather than trying to fix everything at once — the Room-by-Room Checker can help you track this systematically."
+        );
+      }
+
+      const remedies = BUDGET_REMEDIES[budget] || BUDGET_REMEDIES.low;
+      points.push(`Given your budget, practical options include: ${remedies.join("; ")}.`);
+
+      return points;
+    }
+
+    document.getElementById("advisor-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const input = Object.fromEntries(formData.entries());
+      const advice = generateAdvice(input);
+
+      const result = document.getElementById("advisor-result");
+      result.innerHTML = `
+        <div class="region-note p-6">
+          <h2 class="font-semibold text-amber-900 mb-3">Your Personalized Suggestions</h2>
+          <ul class="space-y-3 text-sm text-amber-900/90">
+            ${advice.map((p) => `<li class="flex gap-2"><span aria-hidden="true">•</span><span>${p}</span></li>`).join("")}
+          </ul>
+          <p class="text-xs text-amber-800/70 mt-4 pt-4 border-t border-amber-200">
+            These are general, rule-based suggestions from commonly cited Vastu principles — not a substitute for
+            an in-person consultation or professional architectural advice.
+          </p>
+        </div>
+      `;
+      result.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      maybeUnlockAndNotify("advisor-consulted");
+    });
+  </script>
+</body>
+</html>

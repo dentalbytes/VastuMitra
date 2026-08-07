@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Consultant (Beta) | Vastu Guide</title>
+  <meta name="description" content="Ask open-ended Vastu questions in your own words. Requires a one-time setup step with your own AI API key." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%95%89%EF%B8%8F</text></svg>" />
+</head>
+<body class="text-stone-800 antialiased">
+  <header id="site-header" class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-stone-100"></header>
+  <div id="disclaimer-banner"></div>
+
+  <main class="max-w-2xl mx-auto px-4 sm:px-6 py-12">
+    <a href="progress.html" class="text-sm text-amber-700 hover:text-amber-900 font-medium">← My Progress</a>
+
+    <div class="flex items-center gap-3 mt-4 mb-2">
+      <span class="text-4xl" aria-hidden="true">🤖</span>
+      <h1 class="font-serif text-3xl sm:text-4xl font-bold text-stone-900">AI Consultant</h1>
+      <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-stone-100 text-stone-500">BETA</span>
+    </div>
+    <p class="text-lg text-stone-600 leading-relaxed mb-6 max-w-2xl">
+      Ask a question in your own words — like "Where should I keep my bed?" or "Is my kitchen in the wrong
+      direction?" — and get an answer grounded in traditional Vastu principles.
+    </p>
+
+    <div class="region-note p-4 mb-6 text-sm text-amber-900 leading-relaxed">
+      <strong>Setup required:</strong> this calls a small backend function that isn't wired up until the site's
+      owner adds an AI API key. If you're the owner, see <code class="bg-white/60 px-1 rounded">api/consult.js</code>
+      and the README for the two-minute setup. Until then, try the rule-based <a href="advisor.html" class="underline font-medium hover:text-amber-700">Vastu Advisor</a> instead.
+    </div>
+
+    <div id="chat-log" class="space-y-3 mb-4 max-h-[50vh] overflow-y-auto"></div>
+
+    <form id="chat-form" class="flex gap-2">
+      <input id="chat-input" type="text" placeholder="Ask a Vastu question…" autocomplete="off"
+        class="flex-1 rounded-full border border-stone-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" />
+      <button type="submit" class="px-5 py-2.5 rounded-full bg-amber-800 text-white text-sm font-medium hover:bg-amber-900 transition-colors">Ask</button>
+    </form>
+
+    <div class="flex justify-between text-sm pt-8">
+      <a href="floor-plan.html" class="text-amber-700 hover:text-amber-900 font-medium ml-auto">Floor Plan Analysis →</a>
+    </div>
+  </main>
+
+  <footer id="site-footer" class="bg-stone-50 border-t border-stone-100 mt-8"></footer>
+
+  <script src="js/main.js"></script>
+  <script>
+    const history = [];
+
+    function addBubble(role, text) {
+      const log = document.getElementById("chat-log");
+      const bubble = document.createElement("div");
+      bubble.className =
+        role === "user"
+          ? "ml-auto max-w-[85%] bg-amber-800 text-white rounded-2xl rounded-br-sm px-4 py-2.5 text-sm"
+          : "mr-auto max-w-[85%] bg-white border border-stone-100 rounded-2xl rounded-bl-sm px-4 py-2.5 text-sm text-stone-700";
+      bubble.textContent = text;
+      log.appendChild(bubble);
+      log.scrollTop = log.scrollHeight;
+      return bubble;
+    }
+
+    document.getElementById("chat-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const input = document.getElementById("chat-input");
+      const message = input.value.trim();
+      if (!message) return;
+
+      addBubble("user", message);
+      history.push({ role: "user", content: message });
+      input.value = "";
+
+      const thinking = addBubble("assistant", "Thinking…");
+
+      try {
+        const res = await fetch("/api/consult", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ message, history: history.slice(0, -1) }),
+        });
+
+        if (res.status === 501) {
+          thinking.textContent =
+            "This feature isn't set up yet — the site owner needs to add an AI API key in Vercel (see api/consult.js). Try the Vastu Advisor for now.";
+          return;
+        }
+        if (!res.ok) {
+          thinking.textContent = "Something went wrong reaching the AI backend. Please try again shortly.";
+          return;
+        }
+
+        const data = await res.json();
+        thinking.textContent = data.reply;
+        history.push({ role: "assistant", content: data.reply });
+      } catch (err) {
+        thinking.textContent =
+          "Couldn't reach the AI backend — this page is likely running without the api/ functions deployed yet (e.g. a local preview). Try the Vastu Advisor for now.";
+      }
+    });
+  </script>
+</body>
+</html>

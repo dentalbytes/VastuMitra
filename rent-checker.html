@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rent House Checker | Vastu Guide</title>
+  <meta name="description" content="A 5-minute Vastu checklist for tenants — no renovation, remedies only." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%95%89%EF%B8%8F</text></svg>" />
+</head>
+<body class="text-stone-800 antialiased">
+  <header id="site-header" class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-stone-100"></header>
+  <div id="disclaimer-banner"></div>
+
+  <main class="max-w-2xl mx-auto px-4 sm:px-6 py-12">
+    <a href="plot-selection.html" class="text-sm text-amber-700 hover:text-amber-900 font-medium">← Plot Selection Tool</a>
+
+    <div class="flex items-center gap-3 mt-4 mb-2">
+      <span class="text-4xl" aria-hidden="true">🔑</span>
+      <h1 class="font-serif text-3xl sm:text-4xl font-bold text-stone-900">Rent House Checker</h1>
+    </div>
+    <p class="text-lg text-stone-600 leading-relaxed mb-8 max-w-2xl">
+      Built for tenants: a 5-minute checklist you can run through in a rental you don't own. No renovation
+      suggestions here — only things you can rearrange or add, and remedies that don't require touching the
+      landlord's fixtures.
+    </p>
+
+    <div id="rent-checklist" class="bg-white rounded-2xl border border-stone-100 p-6 mb-6"></div>
+    <div id="rent-result"></div>
+  </main>
+
+  <footer id="site-footer" class="bg-stone-50 border-t border-stone-100 mt-8"></footer>
+
+  <script src="js/badges.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    const RENT_ITEMS = [
+      { id: "entrance-clear", label: "Main entrance is clean, well lit, and free of clutter", remedy: "Add a doormat and a bright bulb — no landlord permission needed." },
+      { id: "bed-position", label: "You can position your bed with the headboard against a South or West wall", remedy: "Rearrange furniture within the room; avoid sleeping with your head to the North." },
+      { id: "kitchen-use", label: "You can arrange to cook while facing East, even if the stove itself can't move", remedy: "Simply reorient your own position at the stove where the layout allows." },
+      { id: "clutter-ne", label: "The North-East corner of your main living space is relatively open", remedy: "Move storage boxes or bulky items out of that corner if you can." },
+      { id: "mirror-bed", label: "No mirror directly faces your bed", remedy: "Reposition a free-standing mirror, or cover a fixed one at night." },
+      { id: "water-leaks", label: "No visible leaks or damp patches", remedy: "Report leaks to your landlord promptly — good for both Vastu and the lease." },
+      { id: "natural-light", label: "Your main living space gets decent natural light", remedy: "Use light curtains and keep windows unobstructed by furniture." },
+      { id: "plants", label: "You keep at least one healthy plant (e.g. money plant, areca palm)", remedy: "Add a low-maintenance auspicious plant — see the Plants & Trees guide." },
+    ];
+
+    function renderChecklist() {
+      const panel = document.getElementById("rent-checklist");
+      panel.innerHTML = RENT_ITEMS.map(
+        (item) => `
+        <label class="flex items-start gap-3 p-3 rounded-lg hover:bg-amber-50/60 cursor-pointer transition-colors">
+          <input type="checkbox" data-id="${item.id}" class="rent-cb mt-0.5 w-4 h-4 rounded border-stone-300 text-amber-700 focus:ring-amber-400" />
+          <span class="text-sm text-stone-700">${item.label}</span>
+        </label>`
+      ).join("");
+
+      panel.querySelectorAll(".rent-cb").forEach((cb) => cb.addEventListener("change", renderResult));
+    }
+
+    function renderResult() {
+      const checked = [...document.querySelectorAll(".rent-cb:checked")].map((cb) => cb.dataset.id);
+      const unchecked = RENT_ITEMS.filter((i) => !checked.includes(i.id));
+      const pct = Math.round((checked.length / RENT_ITEMS.length) * 100);
+
+      const result = document.getElementById("rent-result");
+      if (checked.length === 0) {
+        result.innerHTML = "";
+        return;
+      }
+
+      result.innerHTML = `
+        <div class="region-note p-6">
+          <p class="text-sm font-semibold text-amber-900 mb-2">${pct}% aligned so far</p>
+          ${
+            unchecked.length > 0
+              ? `<p class="text-xs font-semibold uppercase tracking-wide text-amber-800 mb-2">Tenant-friendly fixes</p>
+                 <ul class="space-y-1.5 text-sm text-amber-900/90">
+                   ${unchecked.map((i) => `<li class="flex gap-2"><span aria-hidden="true">•</span>${i.remedy}</li>`).join("")}
+                 </ul>`
+              : `<p class="text-sm text-amber-900/90">You've covered everything on this quick list — nice work.</p>`
+          }
+        </div>
+      `;
+      maybeUnlockAndNotify("beginner");
+    }
+
+    renderChecklist();
+  </script>
+</body>
+</html>

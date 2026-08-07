@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Roadmap | Vastu Guide</title>
+  <meta name="description" content="What's built, what's beta, and what's intentionally not built yet — and what each remaining feature would need." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%95%89%EF%B8%8F</text></svg>" />
+</head>
+<body class="text-stone-800 antialiased">
+  <header id="site-header" class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-stone-100"></header>
+  <div id="disclaimer-banner"></div>
+
+  <main class="max-w-3xl mx-auto px-4 sm:px-6 py-12">
+    <a href="index.html" class="text-sm text-amber-700 hover:text-amber-900 font-medium">← Home</a>
+
+    <h1 class="font-serif text-3xl sm:text-4xl font-bold text-stone-900 mt-4 mb-4">Roadmap</h1>
+    <p class="text-lg text-stone-600 leading-relaxed mb-10 max-w-2xl">
+      An honest status report: what's live and fully working today, what's built but needs a setup step, and what's
+      intentionally not built yet — plus what each of those would actually require.
+    </p>
+
+    <section class="mb-10">
+      <h2 class="font-serif text-xl font-bold text-green-800 mb-3">✅ Live now (no setup needed)</h2>
+      <p class="text-sm text-stone-600 mb-3">Everything below runs entirely in the browser — no account, no backend, no API keys.</p>
+      <ul class="grid sm:grid-cols-2 gap-x-6 gap-y-1.5 text-sm text-stone-700">
+        <li class="do-item">10 room-by-room guides + Plants &amp; Trees guide</li>
+        <li class="do-item">Room-by-Room Checker + Vastu Score Card</li>
+        <li class="do-item">Interactive Compass (incl. live device-compass mode)</li>
+        <li class="do-item">Vastu Health Dashboard</li>
+        <li class="do-item">Vastu Advisor (rule-based personalization)</li>
+        <li class="do-item">Daily Vastu Tips</li>
+        <li class="do-item">Remedies Without Demolition library</li>
+        <li class="do-item">Plot Selection Tool</li>
+        <li class="do-item">Rent House Checker</li>
+        <li class="do-item">Vastu for Offices</li>
+        <li class="do-item">Product Guide (educational, no shop/links)</li>
+        <li class="do-item">Gamification badges (My Progress)</li>
+      </ul>
+    </section>
+
+    <section class="mb-10">
+      <h2 class="font-serif text-xl font-bold text-amber-800 mb-3">🛠️ Built, needs a one-time setup</h2>
+      <div class="space-y-4">
+        <div class="bg-white rounded-2xl border border-stone-100 p-5">
+          <p class="font-semibold text-stone-900">AI Consultant (open-ended chat)</p>
+          <p class="text-sm text-stone-600 mt-1">UI and backend code are complete (<code>consultant.html</code> + <code>api/consult.js</code>). Needs an <code>ANTHROPIC_API_KEY</code> or <code>OPENAI_API_KEY</code> added in Vercel's environment variables, then a redeploy. See the README.</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-stone-100 p-5">
+          <p class="font-semibold text-stone-900">Floor Plan Analysis</p>
+          <p class="text-sm text-stone-600 mt-1">Same setup as the AI Consultant (<code>floor-plan.html</code> + <code>api/analyze-floorplan.js</code>) — both providers support image input, so no extra config beyond the key. Expect this to be genuinely hit-or-miss on messy hand-drawn sketches; it's an assistive first pass, not a certified survey.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="mb-10">
+      <h2 class="font-serif text-xl font-bold text-stone-700 mb-3">🗺️ Not built — and what it would take</h2>
+      <div class="space-y-4">
+        <div class="bg-white rounded-2xl border border-stone-100 p-5">
+          <p class="font-semibold text-stone-900">Camera-based AR overlay</p>
+          <p class="text-sm text-stone-600 mt-1">True AR (highlighting "place bed here" over a live camera view) needs a native AR framework (ARKit/ARCore) or WebXR with careful device testing — not something reliably buildable or verifiable without physical devices. The Interactive Compass's live mode is the browser-feasible middle ground.</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-stone-100 p-5">
+          <p class="font-semibold text-stone-900">Muhurat Calendar with real dates</p>
+          <p class="text-sm text-stone-600 mt-1">Needs a real Panchang/astronomical data source or paid API — without one, "auspicious dates" would just be invented. Better to integrate a proper data provider than fake it.</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-stone-100 p-5">
+          <p class="font-semibold text-stone-900">Community (before/after photos, Q&amp;A)</p>
+          <p class="text-sm text-stone-600 mt-1">Needs user accounts, a database, image storage, and moderation — a genuine backend application, not a static site.</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-stone-100 p-5">
+          <p class="font-semibold text-stone-900">Professional tier (multi-property, branded PDF reports, client management)</p>
+          <p class="text-sm text-stone-600 mt-1">Needs auth, a database per professional account, and a PDF generation pipeline — all backend work.</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-stone-100 p-5">
+          <p class="font-semibold text-stone-900">Payments (Razorpay / Stripe)</p>
+          <p class="text-sm text-stone-600 mt-1">Needs a merchant account in your name and a checkout integration — can be added once there's something to actually gate behind a paywall.</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-stone-100 p-5">
+          <p class="font-semibold text-stone-900">Native mobile app (Flutter)</p>
+          <p class="text-sm text-stone-600 mt-1">A different platform entirely — separate codebase, app store accounts, and a mobile build toolchain. This site works as a mobile-friendly website today (and can be "installed" from the browser's share menu), which covers a lot of the same ground without a rewrite.</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-stone-100 p-5">
+          <p class="font-semibold text-stone-900">Full regional language translations</p>
+          <p class="text-sm text-stone-600 mt-1">Hindi, Marathi, Tamil, Telugu, Kannada, Bengali, and Gujarati translations of every page are a large content effort best tackled deliberately, ideally with a native speaker reviewing the traditional terminology — happy to start with one language if you want to prioritize it.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="flex justify-between text-sm pt-6 border-t border-stone-100">
+      <a href="index.html" class="text-amber-700 hover:text-amber-900 font-medium">← Back to Home</a>
+    </div>
+  </main>
+
+  <footer id="site-footer" class="bg-stone-50 border-t border-stone-100 mt-8"></footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

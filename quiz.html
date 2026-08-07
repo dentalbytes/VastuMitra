@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vastu Knowledge Quiz | Vastu Guide</title>
+  <meta name="description" content="Test what you've learned about traditional Vastu Shastra with a quick multiple-choice quiz." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%95%89%EF%B8%8F</text></svg>" />
+</head>
+<body class="text-stone-800 antialiased">
+  <header id="site-header" class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-stone-100"></header>
+  <div id="disclaimer-banner"></div>
+
+  <main class="max-w-2xl mx-auto px-4 sm:px-6 py-12">
+    <a href="progress.html" class="text-sm text-amber-700 hover:text-amber-900 font-medium">← My Progress</a>
+
+    <div class="flex items-center gap-3 mt-4 mb-2">
+      <span class="text-4xl" aria-hidden="true">🎓</span>
+      <h1 class="font-serif text-3xl sm:text-4xl font-bold text-stone-900">Vastu Knowledge Quiz</h1>
+    </div>
+    <p class="text-lg text-stone-600 leading-relaxed mb-8 max-w-2xl">
+      12 questions drawn straight from this site's own guides. Score 80% or higher to earn the Quiz Master badge.
+    </p>
+
+    <!-- Progress bar -->
+    <div id="progress-wrap" class="h-2 rounded-full bg-stone-100 overflow-hidden mb-6">
+      <div id="progress-bar" class="h-full bg-amber-700 rounded-full transition-all" style="width:0%"></div>
+    </div>
+
+    <div id="quiz-area"></div>
+  </main>
+
+  <footer id="site-footer" class="bg-stone-50 border-t border-stone-100 mt-8"></footer>
+
+  <script src="js/quiz-data.js"></script>
+  <script src="js/badges.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    let current = 0;
+    let score = 0;
+    let answered = false;
+    const total = QUIZ_QUESTIONS.length;
+
+    function updateProgress() {
+      const pct = Math.round((current / total) * 100);
+      document.getElementById("progress-bar").style.width = `${pct}%`;
+    }
+
+    function renderQuestion() {
+      answered = false;
+      updateProgress();
+      const q = QUIZ_QUESTIONS[current];
+      const area = document.getElementById("quiz-area");
+      area.innerHTML = `
+        <div class="bg-white rounded-2xl border border-stone-100 p-6">
+          <p class="text-xs font-semibold uppercase tracking-wide text-stone-400 mb-2">Question ${current + 1} of ${total}</p>
+          <h2 class="font-serif text-lg font-bold text-stone-900 mb-5">${q.question}</h2>
+          <div id="options" class="space-y-2.5">
+            ${q.options
+              .map(
+                (opt, i) => `
+              <button data-i="${i}" class="quiz-opt w-full text-left px-4 py-3 rounded-lg border border-stone-200 text-sm hover:border-amber-300 hover:bg-amber-50/50 transition-colors">
+                ${opt}
+              </button>`
+              )
+              .join("")}
+          </div>
+          <div id="feedback" class="hidden mt-4"></div>
+        </div>
+      `;
+
+      area.querySelectorAll(".quiz-opt").forEach((btn) => {
+        btn.addEventListener("click", () => selectAnswer(Number(btn.dataset.i)));
+      });
+    }
+
+    function selectAnswer(i) {
+      if (answered) return;
+      answered = true;
+      const q = QUIZ_QUESTIONS[current];
+      const isCorrect = i === q.correct;
+      if (isCorrect) score++;
+
+      document.querySelectorAll(".quiz-opt").forEach((btn, idx) => {
+        btn.disabled = true;
+        if (idx === q.correct) {
+          btn.classList.add("border-green-400", "bg-green-50", "text-green-800");
+        } else if (idx === i) {
+          btn.classList.add("border-red-400", "bg-red-50", "text-red-700");
+        } else {
+          btn.classList.add("opacity-50");
+        }
+      });
+
+      const feedback = document.getElementById("feedback");
+      feedback.classList.remove("hidden");
+      feedback.innerHTML = `
+        <div class="region-note p-4 text-sm text-amber-900">
+          <p class="font-semibold mb-1">${isCorrect ? "✓ Correct" : "✕ Not quite"}</p>
+          <p>${q.explanation}</p>
+        </div>
+        <button id="next-btn" class="mt-4 w-full py-3 rounded-full bg-amber-800 text-white font-medium hover:bg-amber-900 transition-colors">
+          ${current + 1 === total ? "See My Score" : "Next Question"}
+        </button>
+      `;
+      document.getElementById("next-btn").addEventListener("click", () => {
+        current++;
+        if (current >= total) {
+          renderResults();
+        } else {
+          renderQuestion();
+        }
+      });
+    }
+
+    function renderResults() {
+      updateProgress();
+      document.getElementById("progress-bar").style.width = "100%";
+      const pct = Math.round((score / total) * 100);
+      const area = document.getElementById("quiz-area");
+
+      let message = "Keep exploring the room guides — you'll get there.";
+      if (pct >= 80) {
+        message = "Excellent! You clearly know your directions.";
+        maybeUnlockAndNotify("quiz-master");
+      } else if (pct >= 50) {
+        message = "Solid grasp of the basics — a few more guides to go.";
+      }
+
+      area.innerHTML = `
+        <div class="bg-white rounded-2xl border border-stone-100 p-8 text-center">
+          <p class="text-sm font-semibold uppercase tracking-wide text-stone-400 mb-2">Your Score</p>
+          <p class="text-5xl font-serif font-bold text-amber-800 mb-2">${score}/${total}</p>
+          <p class="text-stone-600 mb-6">${message}</p>
+          <div class="flex flex-wrap justify-center gap-3">
+            <button id="retry-btn" class="px-6 py-3 rounded-full bg-amber-800 text-white font-medium hover:bg-amber-900 transition-colors">Try Again</button>
+            <a href="progress.html" class="px-6 py-3 rounded-full bg-white border border-stone-200 text-stone-700 font-medium hover:border-amber-300 transition-colors">See My Badges</a>
+          </div>
+        </div>
+      `;
+      document.getElementById("retry-btn").addEventListener("click", () => {
+        current = 0;
+        score = 0;
+        renderQuestion();
+      });
+      maybeUnlockAndNotify("beginner");
+    }
+
+    renderQuestion();
+  </script>
+</body>
+</html>

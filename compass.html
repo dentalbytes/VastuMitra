@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interactive House Compass | Vastu Guide</title>
+  <meta name="description" content="Tap any of the 8 directions to see what's traditionally best placed there, what to avoid, colors, element, and lucky numbers. Includes an optional live phone-compass mode." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%95%89%EF%B8%8F</text></svg>" />
+</head>
+<body class="text-stone-800 antialiased">
+  <header id="site-header" class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-stone-100"></header>
+  <div id="disclaimer-banner"></div>
+
+  <main class="max-w-3xl mx-auto px-4 sm:px-6 py-12">
+    <a href="index.html" class="text-sm text-amber-700 hover:text-amber-900 font-medium">← Home</a>
+
+    <div class="flex items-center gap-3 mt-4 mb-2">
+      <span class="text-4xl" aria-hidden="true">🧭</span>
+      <h1 class="font-serif text-3xl sm:text-4xl font-bold text-stone-900">Interactive House Compass</h1>
+    </div>
+    <p class="text-lg text-stone-600 leading-relaxed mb-6 max-w-2xl">
+      Tap any direction to see what's traditionally best placed there, what to avoid, and its associated element,
+      colors, and lucky numbers.
+    </p>
+
+    <!-- Live compass toggle -->
+    <div class="flex flex-wrap items-center gap-3 mb-8">
+      <button id="live-compass-btn" class="px-4 py-2.5 rounded-full text-sm font-medium bg-white border border-stone-200 text-stone-700 hover:border-amber-300 flex items-center gap-2">
+        <span aria-hidden="true">📱</span> Try live compass (uses your phone's sensor)
+      </button>
+      <span id="live-compass-status" class="text-xs text-stone-400"></span>
+    </div>
+
+    <div class="grid sm:grid-cols-[auto,1fr] gap-8 items-start">
+      <!-- Compass grid -->
+      <div class="grid grid-cols-3 grid-rows-3 gap-2 w-full max-w-xs mx-auto sm:mx-0" role="group" aria-label="Choose a direction">
+        <div></div>
+        <button data-dir="N" class="compass-btn"></button>
+        <div></div>
+        <button data-dir="W" class="compass-btn"></button>
+        <div class="flex items-center justify-center text-3xl" aria-hidden="true">🏠</div>
+        <button data-dir="E" class="compass-btn"></button>
+        <div></div>
+        <button data-dir="S" class="compass-btn"></button>
+        <div></div>
+      </div>
+
+      <!-- Detail panel -->
+      <div id="direction-panel" class="bg-white rounded-2xl border border-stone-100 p-6 w-full min-h-[280px]"></div>
+    </div>
+
+    <!-- Inter-cardinal row (NE/SE/SW/NW as a secondary row for smaller screens) -->
+    <div class="grid grid-cols-4 gap-2 max-w-xs mx-auto sm:mx-0 mt-4">
+      <button data-dir="NE" class="compass-btn-sm"></button>
+      <button data-dir="SE" class="compass-btn-sm"></button>
+      <button data-dir="SW" class="compass-btn-sm"></button>
+      <button data-dir="NW" class="compass-btn-sm"></button>
+    </div>
+
+    <div class="flex justify-between text-sm pt-8">
+      <a href="room-checker.html" class="text-amber-700 hover:text-amber-900 font-medium">← Room Checker</a>
+      <a href="dashboard.html" class="text-amber-700 hover:text-amber-900 font-medium">Health Dashboard →</a>
+    </div>
+  </main>
+
+  <footer id="site-footer" class="bg-stone-50 border-t border-stone-100 mt-8"></footer>
+
+  <style type="text/tailwindcss">
+    .compass-btn, .compass-btn-sm {
+      @apply bg-white border border-stone-200 rounded-xl font-semibold text-stone-700 hover:border-amber-400 hover:bg-amber-50 transition-colors;
+    }
+    .compass-btn { @apply h-16 text-sm; }
+    .compass-btn-sm { @apply h-12 text-xs; }
+    .compass-btn.active, .compass-btn-sm.active { @apply bg-amber-800 text-white border-amber-800; }
+  </style>
+  <style>
+    .compass-btn.visited::after, .compass-btn-sm.visited::after { content: "●"; color: #16a34a; font-size: 8px; display: block; }
+  </style>
+
+  <script src="js/compass-data.js"></script>
+  <script src="js/badges.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    let activeDir = "N";
+    const VIEWED_KEY = "vastu-compass-viewed";
+
+    function getViewed() {
+      try {
+        return new Set(JSON.parse(localStorage.getItem(VIEWED_KEY)) || []);
+      } catch {
+        return new Set();
+      }
+    }
+    function markViewed(key) {
+      const viewed = getViewed();
+      viewed.add(key);
+      localStorage.setItem(VIEWED_KEY, JSON.stringify([...viewed]));
+      if (viewed.size === DIRECTIONS.length) {
+        maybeUnlockAndNotify("direction-master");
+      }
+      maybeUnlockAndNotify("beginner");
+    }
+
+    function labelButtons() {
+      const viewed = getViewed();
+      document.querySelectorAll(".compass-btn, .compass-btn-sm").forEach((btn) => {
+        const key = btn.dataset.dir;
+        const def = DIRECTIONS.find((d) => d.key === key);
+        btn.textContent = key;
+        btn.setAttribute("aria-label", def.name);
+        btn.classList.toggle("active", key === activeDir);
+        btn.classList.toggle("visited", viewed.has(key));
+      });
+    }
+
+    function renderPanel() {
+      const def = DIRECTIONS.find((d) => d.key === activeDir);
+      const panel = document.getElementById("direction-panel");
+      panel.innerHTML = `
+        <div class="flex items-baseline justify-between mb-1">
+          <h2 class="font-serif text-2xl font-bold text-stone-900">${def.name}</h2>
+          <span class="text-sm text-stone-400">${def.sanskrit}</span>
+        </div>
+        <p class="text-xs text-stone-500 mb-4">Element: <strong class="text-stone-700">${def.element}</strong> · Ruling deity: <strong class="text-stone-700">${def.deity}</strong></p>
+
+        <div class="mb-3">
+          <p class="text-xs font-semibold uppercase tracking-wide text-green-700 mb-1">Best for</p>
+          <ul class="text-sm text-stone-700 space-y-1">${def.bestFor.map((b) => `<li class="do-item">${b}</li>`).join("")}</ul>
+        </div>
+        <div class="mb-3">
+          <p class="text-xs font-semibold uppercase tracking-wide text-red-700 mb-1">Avoid</p>
+          <ul class="text-sm text-stone-700 space-y-1">${def.avoid.map((a) => `<li class="avoid-item">${a}</li>`).join("")}</ul>
+        </div>
+        <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm mt-4 pt-4 border-t border-stone-100">
+          <p><span class="text-stone-400">Colors:</span> <strong class="text-stone-700">${def.colors.join(", ")}</strong></p>
+          <p><span class="text-stone-400">Lucky numbers:</span> <strong class="text-stone-700">${def.luckyNumbers.join(", ")}</strong></p>
+        </div>
+      `;
+    }
+
+    document.querySelectorAll(".compass-btn, .compass-btn-sm").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        activeDir = btn.dataset.dir;
+        markViewed(activeDir);
+        labelButtons();
+        renderPanel();
+      });
+    });
+
+    labelButtons();
+    renderPanel();
+
+    // --- Best-effort live compass using DeviceOrientationEvent ---
+    const liveBtn = document.getElementById("live-compass-btn");
+    const liveStatus = document.getElementById("live-compass-status");
+    let liveActive = false;
+
+    function handleOrientation(event) {
+      let heading = null;
+      if (typeof event.webkitCompassHeading === "number") {
+        heading = event.webkitCompassHeading; // iOS Safari
+      } else if (event.absolute && typeof event.alpha === "number") {
+        heading = 360 - event.alpha; // best-effort approximation on Android/Chrome
+      }
+      if (heading === null) return;
+      const def = getDirectionByCompassHeading(heading);
+      activeDir = def.key;
+      markViewed(activeDir);
+      labelButtons();
+      renderPanel();
+      liveStatus.textContent = `Live heading: ${Math.round(heading)}° → facing ${def.name}`;
+    }
+
+    liveBtn.addEventListener("click", async () => {
+      if (liveActive) {
+        window.removeEventListener("deviceorientation", handleOrientation);
+        liveActive = false;
+        liveStatus.textContent = "Live compass stopped.";
+        liveBtn.textContent = "📱 Try live compass (uses your phone's sensor)";
+        return;
+      }
+
+      if (typeof DeviceOrientationEvent === "undefined") {
+        liveStatus.textContent = "Your browser doesn't support device orientation — use the buttons above instead.";
+        return;
+      }
+
+      try {
+        if (typeof DeviceOrientationEvent.requestPermission === "function") {
+          const result = await DeviceOrientationEvent.requestPermission();
+          if (result !== "granted") {
+            liveStatus.textContent = "Permission denied — use the buttons above instead.";
+            return;
+          }
+        }
+        window.addEventListener("deviceorientation", handleOrientation);
+        liveActive = true;
+        liveBtn.textContent = "⏹ Stop live compass";
+        liveStatus.textContent = "Point your phone flat and rotate slowly — accuracy varies by device and browser.";
+      } catch (err) {
+        liveStatus.textContent = "Couldn't access the compass sensor on this device — use the buttons above instead.";
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Room-by-Room Vastu Checker | Vastu Guide</title>
+  <meta name="description" content="Interactive room-by-room Vastu checklist. Check off what your home already gets right and see a live score per room." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%95%89%EF%B8%8F</text></svg>" />
+</head>
+<body class="text-stone-800 antialiased">
+  <header id="site-header" class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-stone-100"></header>
+  <div id="disclaimer-banner"></div>
+
+  <main class="max-w-4xl mx-auto px-4 sm:px-6 py-12">
+    <a href="index.html" class="text-sm text-amber-700 hover:text-amber-900 font-medium">← Home</a>
+
+    <div class="flex items-center gap-3 mt-4 mb-2">
+      <span class="text-4xl" aria-hidden="true">✅</span>
+      <h1 class="font-serif text-3xl sm:text-4xl font-bold text-stone-900">Room-by-Room Checker</h1>
+    </div>
+    <p class="text-lg text-stone-600 leading-relaxed mb-2 max-w-2xl">
+      Go room by room and check off what your home already gets right. Nothing is uploaded anywhere — your answers
+      are saved only in this browser.
+    </p>
+    <p class="text-sm text-stone-500 mb-8">
+      Want the combined picture? See your <a href="score-card.html" class="text-amber-700 hover:text-amber-900 underline font-medium">overall Vastu Score Card</a> once you've checked a few rooms.
+    </p>
+
+    <!-- Room tabs -->
+    <div id="room-tabs" class="flex flex-wrap gap-2 mb-6" role="tablist"></div>
+
+    <!-- Active room checklist -->
+    <div id="checklist-panel" class="bg-white rounded-2xl border border-stone-100 p-6"></div>
+
+    <div class="flex justify-between text-sm pt-8">
+      <a href="compass.html" class="text-amber-700 hover:text-amber-900 font-medium">← Interactive Compass</a>
+      <a href="score-card.html" class="text-amber-700 hover:text-amber-900 font-medium">View Score Card →</a>
+    </div>
+  </main>
+
+  <footer id="site-footer" class="bg-stone-50 border-t border-stone-100 mt-8"></footer>
+
+  <script src="js/checker-data.js"></script>
+  <script src="js/badges.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    const roomKeys = Object.keys(CHECKLISTS);
+    let activeRoom = roomKeys[0];
+
+    function scoreColor(score10) {
+      if (score10 >= 8) return "text-green-700 bg-green-100";
+      if (score10 >= 5) return "text-amber-700 bg-amber-100";
+      return "text-red-700 bg-red-100";
+    }
+
+    function renderTabs() {
+      const tabs = document.getElementById("room-tabs");
+      tabs.innerHTML = roomKeys
+        .map((key) => {
+          const def = CHECKLISTS[key];
+          const s = roomScoreOutOf10(key);
+          const answered = hasAnyAnswers(key);
+          const isActive = key === activeRoom;
+          return `
+            <button data-room="${key}" role="tab" aria-selected="${isActive}"
+              class="room-tab-btn px-4 py-2 rounded-full text-sm font-medium border flex items-center gap-1.5 transition-colors ${
+                isActive ? "bg-amber-800 text-white border-amber-800" : "bg-white text-stone-700 border-stone-200 hover:border-amber-300"
+              }">
+              <span aria-hidden="true">${def.icon}</span> ${def.label}
+              ${answered ? `<span class="ml-1 text-xs px-1.5 py-0.5 rounded-full ${isActive ? "bg-white/20" : scoreColor(s.score10)}">${s.score10}/10</span>` : ""}
+            </button>`;
+        })
+        .join("");
+
+      tabs.querySelectorAll(".room-tab-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          activeRoom = btn.dataset.room;
+          renderTabs();
+          renderChecklist();
+        });
+      });
+    }
+
+    function renderChecklist() {
+      const def = CHECKLISTS[activeRoom];
+      const answers = getChecklistAnswers(activeRoom);
+      const s = roomScoreOutOf10(activeRoom);
+      const panel = document.getElementById("checklist-panel");
+
+      panel.innerHTML = `
+        <div class="flex items-center justify-between mb-5">
+          <h2 class="font-serif text-xl font-bold text-stone-900 flex items-center gap-2">
+            <span aria-hidden="true">${def.icon}</span> ${def.label}
+          </h2>
+          <span class="text-sm font-semibold px-3 py-1 rounded-full ${scoreColor(s.score10)}">${s.checked}/${s.total} · ${s.score10}/10</span>
+        </div>
+        <div class="space-y-3">
+          ${def.items
+            .map(
+              (item) => `
+              <label class="flex items-start gap-3 p-3 rounded-lg hover:bg-amber-50/60 cursor-pointer transition-colors">
+                <input type="checkbox" data-item="${item.id}" ${answers[item.id] ? "checked" : ""}
+                  class="mt-0.5 w-4 h-4 rounded border-stone-300 text-amber-700 focus:ring-amber-400" />
+                <span class="text-sm text-stone-700">${item.label}</span>
+              </label>`
+            )
+            .join("")}
+        </div>
+      `;
+
+      panel.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
+        cb.addEventListener("change", () => {
+          const currentAnswers = getChecklistAnswers(activeRoom);
+          currentAnswers[cb.dataset.item] = cb.checked;
+          saveChecklistAnswers(activeRoom, currentAnswers);
+          maybeUnlockAndNotify("beginner");
+
+          const updatedScore = roomScoreOutOf10(activeRoom);
+          if (activeRoom === "kitchen" && updatedScore.score10 === 10) {
+            maybeUnlockAndNotify("perfect-kitchen");
+          }
+          const allRoomsCompleted = roomKeys.every((k) => {
+            const ans = getChecklistAnswers(k);
+            return CHECKLISTS[k].items.every((i) => Object.prototype.hasOwnProperty.call(ans, i.id));
+          });
+          if (allRoomsCompleted) {
+            maybeUnlockAndNotify("checklist-champion");
+          }
+
+          renderTabs();
+          renderChecklist();
+        });
+      });
+    }
+
+    renderTabs();
+    renderChecklist();
+  </script>
+</body>
+</html>
